@@ -30,7 +30,7 @@ var handlers = {
             // Create speech output
             var speechOutput = "Here's your fact: " + randomFact;
 
-            if(error || response.statusCode != 200)) {
+            if(error || response.statusCode != 200) {
                 this.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
             }
 
