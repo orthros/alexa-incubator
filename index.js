@@ -1,22 +1,11 @@
 'use strict';
 var Alexa = require('alexa-sdk');
+var request = require('request');
 
 var APP_ID = undefined; //OPTIONAL: replace with "amzn1.echo-sdk-ams.app.[your-unique-value-here]";
-var SKILL_NAME = 'Heights Facts';
+var SKILL_NAME = 'Incubator Solver';
 
-/**
- * Array containing space facts.
- */
-var FACTS = [
-    "The Heights is an awesome place",
-    "Onion Creek is a great place to eat.",
-    "Coultivare does not take reservations.",
-    "There are several places to do yoga in the Heights.",
-    "Stude Park is undergoing several renovations in 2016",
-    "The heights is home to some of the oldest houses in Houston",
-    "There are lots of Poke stops on Heights Boulevard",
-    "Most bars will give you a 10 % discount for biking up to them"
-];
+
 
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
@@ -33,14 +22,39 @@ var handlers = {
         this.emit('GetFact');
     },
     'GetFact': function () {
-        // Get a random space fact from the space facts list
-        var factIndex = Math.floor(Math.random() * FACTS.length);
-        var randomFact = FACTS[factIndex];
+        //For now we are going to simply going to call the web service with
+        //hard coded values to test connectivity between
+        //Alexa and the web service.
 
-        // Create speech output
-        var speechOutput = "Here's your fact: " + randomFact;
+        request("http://lb.115b45c1.svc.dockerapp.io:80/solve/distance/10/eggs/2", function(error, response, body){
+            // Create speech output
+            var speechOutput = "Here's your fact: " + randomFact;
 
-        this.emit(':tellWithCard', speechOutput, SKILL_NAME, randomFact)
+            if(error || response.statusCode != 200)) {
+                this.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
+            }
+
+            var unfeasableDist = body.unfeasableDistances;
+            var infinateDistances = body.infinateDistances;
+            var incubatorsAndDistances = body.incubatorsAndDistances;
+
+            if(infinateDistances.length == 0 && incubatorsAndDistances == 0) {
+                speechOutput = "You will be unable to hatch any eggs on this walk";
+            }
+            else {
+                speechOutput = "You will need " + incubatorsAndDistances.length +
+                               " incubators for your walk, and you will need to put the " +
+                               infinateDistances.toString() + " eggs in the Infinate Incubator.";
+
+                if(unfeasableDist.length > 0) {
+                    speechOutput = speechOutput + " You will be unable to hatch " + unfeasableDist.length + " eggs";
+                }
+            }
+
+            this.emit(':tellWithCard', speechOutput, SKILL_NAME);
+        })
+
+
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = "You can say tell me a space fact, or, you can say exit... What can I help you with?";
