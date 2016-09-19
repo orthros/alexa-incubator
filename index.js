@@ -32,7 +32,7 @@ var handlers = {
             // Create speech output
 
             if(error || response.statusCode != 200) {
-                this.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
+                me.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
             }
 
             var bodyJson = JSON.parse(body);
