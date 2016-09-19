@@ -58,8 +58,6 @@ var handlers = {
 
             me.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
         });
-
-
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = "You can say tell me a space fact, or, you can say exit... What can I help you with?";
