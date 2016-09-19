@@ -26,15 +26,15 @@ var handlers = {
         //hard coded values to test connectivity between
         //Alexa and the web service.
 
+        var me = this;
+
         request("http://lb.115b45c1.svc.dockerapp.io:80/solve/distance/10/eggs/2", function(error, response, body){
             // Create speech output
-            var speechOutput = "";
 
             if(error || response.statusCode != 200) {
-                this.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
+                me.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
             }
 
-            console.log(body);
             var bodyJson = JSON.parse(body);
 
             var unfeasableDist = bodyJson.unfeasableDistances;
@@ -56,12 +56,8 @@ var handlers = {
 
             speechOutput = "Unfeasable " + unfeasableDist.length + " Infinate " + infinateDistances.length + " Incubators " + incubatorsAndDistances.length;
 
-            console.log(speechOutput);
-
-            this.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
-        })
-
-
+            me.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+        });
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = "You can say tell me a space fact, or, you can say exit... What can I help you with?";
