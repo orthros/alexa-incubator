@@ -26,19 +26,22 @@ var handlers = {
         //hard coded values to test connectivity between
         //Alexa and the web service.
 
+        var me = this;
+
         request("http://lb.115b45c1.svc.dockerapp.io:80/solve/distance/10/eggs/2", function(error, response, body){
             // Create speech output
-            var speechOutput = "Here's your fact: " + randomFact;
 
             if(error || response.statusCode != 200) {
                 this.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
             }
 
-            var unfeasableDist = body.unfeasableDistances;
-            var infinateDistances = body.infinateDistances;
-            var incubatorsAndDistances = body.incubatorsAndDistances;
+            var bodyJson = JSON.parse(body);
 
-            if(infinateDistances.length == 0 && incubatorsAndDistances == 0) {
+            var unfeasableDist = bodyJson.unfeasableDistances;
+            var infinateDistances = bodyJson.infinateDistances;
+            var incubatorsAndDistances = bodyJson.incubatorsAndDistances;
+
+            if(infinateDistances.length == 0 && incubatorsAndDistances.length == 0) {
                 speechOutput = "You will be unable to hatch any eggs on this walk";
             }
             else {
@@ -51,8 +54,10 @@ var handlers = {
                 }
             }
 
-            this.emit(':tellWithCard', speechOutput, SKILL_NAME);
-        })
+            speechOutput = "Unfeasable " + unfeasableDist.length + " Infinate " + infinateDistances.length + " Incubators " + incubatorsAndDistances.length;
+
+            me.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+        });
 
 
     },
