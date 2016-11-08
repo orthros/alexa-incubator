@@ -35,7 +35,7 @@ var newSessionHandler = {
     },
   'Unhandled': function () {
     this.emit(':ask',
-      `I\'m sorry, but I\'m not sure what you asked me.`);
+      "I\'m sorry, but I\'m not sure what you asked me.");
   }
 };
 
@@ -43,7 +43,13 @@ var distanceHandlers = Alexa.CreateStateHandler(states.DISTANCE, {
     'TellDistanceIntent': function () {
         //We get the distance from the passed data
         this.handler.state = states.EGG;
-        this.handler.distance = 5;
+
+        var dist = parseInt(this.event.request.intent.slots.DistanceItem.value)
+
+        this.attributes["distance"] = dist;
+
+        console.log(this.attributes);
+
         this.emit(':ask', "How far is your egg?", "Say 2km, 5km 10km or Done");
     },
     'AMAZON.NoIntent': function() {
@@ -55,25 +61,35 @@ var eggHandlers = Alexa.CreateStateHandler(states.EGG, {
     'TellEggIntent': function() {
         //Get the egg's distance from the data and
         //save it to the state
-        if(this.handler.eggs == undefined){
-            this.handler.eggs =  {};
+        if(this.attributes["eggs"] === undefined){
+            this.attributes["eggs"] = [];
         }
-        this.handler.eggs.push(2);
+
+        var eggDist = parseInt(this.event.request.intent.slots.EggItem.value)
+
+        this.attributes["eggs"].push(eggDist);
+
         this.emit(':ask', "How far is your egg?", "Say 2km, 5km 10km or Done");
     },
     'AMAZON.NoIntent': function() {
         //Get the data out of the state
         //If it is valid, make the server request and emit
+        var me = this;
 
-            var me = this;
-
-        if(me.handler.eggs == undefined ||
-           me.handler.eggs.length != 0 ||
-           me.handler.distance == undefined) {
+        if(me.attributes["eggs"] == undefined ||
+           me.attributes["eggs"].length == 0 ||
+           me.attributes["distance"] == undefined) {
                me.emit(':tellWithCard', 'Done');
            }
+        var appendString = "/distance/" +
+                           me.attributes["distance"] +
+                           "/eggs/" +
+                            me.attributes["eggs"].join("-");
 
-        request(SERVER_ADDRESS + "distance/10/eggs/2", function(error, response, body){
+        console.log(SERVER_ADDRESS);
+        console.log(appendString);
+
+        request(SERVER_ADDRESS + appendString, function(error, response, body){
             // Create speech output
 
             if(error || response.statusCode != 200) {
