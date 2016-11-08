@@ -15,7 +15,7 @@ var states = {
 };
 
 // This is the intial welcome message
-var welcomeMessage = "Welcome to the Egg Solver. Do you want to sole the Egg Problem?";
+var welcomeMessage = "Welcome to the Egg Solver. Do you want to go on a walk?";
 
 // This is the message that is repeated if the response to the initial welcome message is not heard
 var repeatWelcomeMessage = "Say yes to start or no to quit";
@@ -54,6 +54,10 @@ var distanceHandlers = Alexa.CreateStateHandler(states.DISTANCE, {
     },
     'AMAZON.NoIntent': function() {
         this.emit(':tellWithCard', "Goodbye");
+    },
+    'Unhandled': function () {
+      this.emit(':ask',
+        "I\'m sorry, but I\'m not sure what you asked me. Please tell me how far you want to walk.");
     }
 });
 
@@ -69,7 +73,7 @@ var eggHandlers = Alexa.CreateStateHandler(states.EGG, {
 
         this.attributes["eggs"].push(eggDist);
 
-        this.emit(':ask', "How far is your egg?", "Say 2km, 5km 10km or Done");
+        this.emit(':ask', "How far is your egg?", "Say 2km, 5km 10km or No more Eggs");
     },
     'AMAZON.NoIntent': function() {
         //Get the data out of the state
@@ -93,7 +97,7 @@ var eggHandlers = Alexa.CreateStateHandler(states.EGG, {
             // Create speech output
 
             if(error || response.statusCode != 200) {
-                me.emit(':tellWithCard', "We hit an error optimizing.", SKILL_NAME);
+                me.emit(':tellWithCard', "We hit an error while optimizing.", SKILL_NAME);
             }
 
             var bodyJson = JSON.parse(body);
@@ -109,15 +113,17 @@ var eggHandlers = Alexa.CreateStateHandler(states.EGG, {
             }
             else {
                 speechOutput = "You will need " + incubatorsAndDistances.length +
-                               " incubators for your walk, and you will need to put the " +
-                               infinateDistances.toString() + " eggs in the Infinate Incubator.";
+                               " incubators for your walk";
+
+                if(infinateDistances.length > 0) {
+                    speechOutput = speechOutput + " and you will need to put the " +
+                    infinateDistances.toString() + " eggs in the Infinate Incubator.";
+                }
 
                 if(unfeasableDist.length > 0) {
                     speechOutput = speechOutput + " You will be unable to hatch " + unfeasableDist.length + " eggs";
                 }
             }
-
-            speechOutput = "Unfeasable " + unfeasableDist.length + " Infinate " + infinateDistances.length + " Incubators " + incubatorsAndDistances.length;
 
             me.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
         });
